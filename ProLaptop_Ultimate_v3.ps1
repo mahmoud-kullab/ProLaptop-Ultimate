@@ -1,6 +1,6 @@
 <#
 .SYNOPSIS
-    PRO LAPTOP ULTIMATE v3.0
+    PRO LAPTOP ULTIMATE v3
 .DESCRIPTION
     Complete PC Maintenance, Repair & Cybersecurity Framework
     Eng. Mahmoud Kullab - Pro Laptop, Khan Younis, Gaza
@@ -12,18 +12,23 @@
 #>
 
 # ==============================================================================
+# SELF-ELEVATION (Fixes auto-close issue)
+# ==============================================================================
+$myPath = $MyInvocation.MyCommand.Path
+if ($myPath -and $Host.Name -match "ConsoleHost") {
+    $isAdmin = ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
+    if (-not $isAdmin) {
+        try { Start-Process powershell -ArgumentList "-NoProfile -ExecutionPolicy Bypass -File `"$myPath`"" -Verb RunAs -ErrorAction Stop }
+        catch { Write-Host "`n  [!] ERROR: You must grant Administrator privileges." -ForegroundColor Red; Start-Sleep -Seconds 3 }
+        exit
+    }
+}
+
+# ==============================================================================
 # INITIALIZATION
 # ==============================================================================
 $ErrorActionPreference = "SilentlyContinue"
 Set-StrictMode -Off
-
-# Admin Check
-$isAdmin = ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
-if (-not $isAdmin) {
-    Write-Host "`n  [!] ERROR: Right-click this file and select 'Run as Administrator'" -ForegroundColor Red
-    Read-Host "`n  Press Enter to exit"
-    exit
-}
 
 # Safe Clear-Host wrapper
 function Clear-Host {
@@ -92,17 +97,17 @@ function Show-MainMenu {
     Clear-Host
     Write-Host ""
     Write-Host "  +====================================================================+" -ForegroundColor Cyan
-    Write-Host "  |                                                                 |" -ForegroundColor Cyan
-    Write-Host "  |          PRO LAPTOP ULTIMATE  v3.0                              |" -ForegroundColor Green
-    Write-Host "  |          PC Maintenance and Cybersecurity Framework             |" -ForegroundColor DarkGreen
-    Write-Host "  |                                                                 |" -ForegroundColor Cyan
-    Write-Host "  |          Eng. Mahmoud Kullab  |  Khan Younis, Gaza              |" -ForegroundColor Yellow
-    Write-Host "  |          Phone   :  +970 599 548 716                            |" -ForegroundColor DarkGray
-    Write-Host "  |          Email   :  mahmood.kullab2004@gmail.com                |" -ForegroundColor DarkGray
-    Write-Host "  |          Web     :  mahmoud-kullab.github.io                    |" -ForegroundColor DarkGray
-    Write-Host "  |          GitHub  :  github.com/mahmoud-kullab                   |" -ForegroundColor DarkGray
-    Write-Host "  |          LinkedIn:  linkedin.com/in/m-kullab                    |" -ForegroundColor DarkGray
-    Write-Host "  |                                                                 |" -ForegroundColor Cyan
+    Write-Host "  |                                                                  |" -ForegroundColor Cyan
+    Write-Host "  |          PRO LAPTOP ULTIMATE  v3                                 |" -ForegroundColor Green
+    Write-Host "  |          PC Maintenance and Cybersecurity Framework              |" -ForegroundColor DarkGreen
+    Write-Host "  |                                                                  |" -ForegroundColor Cyan
+    Write-Host "  |          Eng. Mahmoud Kullab  |  Khan Younis, Gaza               |" -ForegroundColor Yellow
+    Write-Host "  |          Phone   :  +970 599 548 716                             |" -ForegroundColor DarkGray
+    Write-Host "  |          Email   :  mahmood.kullab2004@gmail.com                 |" -ForegroundColor DarkGray
+    Write-Host "  |          Web     :  mahmoud-kullab.github.io                     |" -ForegroundColor DarkGray
+    Write-Host "  |          GitHub  :  github.com/mahmoud-kullab                    |" -ForegroundColor DarkGray
+    Write-Host "  |          LinkedIn:  linkedin.com/in/m-kullab                     |" -ForegroundColor DarkGray
+    Write-Host "  |                                                                  |" -ForegroundColor Cyan
     Write-Host "  +====================================================================+" -ForegroundColor Cyan
     Write-Host ""
     Write-Host "   --- POWER & PERFORMANCE ---" -ForegroundColor DarkGray
@@ -124,7 +129,7 @@ function Show-MainMenu {
     Write-Host "   [23] Repair Disk (CHKDSK C:)        [24] Fix Windows Update Services" -ForegroundColor Magenta
     Write-Host "   [25] Fix Windows Store & Apps       [26] Fix Windows Search" -ForegroundColor Magenta
     Write-Host "   [27] Fix Windows Audio              [28] Fix Windows Time Sync" -ForegroundColor Magenta
-    Write-Host "   [29] Reset Windows Firewall         [30] Rebuild Boot Config (BCD)" -ForegroundColor Magenta
+    Write-Host "   [29] Reset Windows Firewall         [30] Boot Repair & BCD Manager" -ForegroundColor Magenta
     Write-Host "   [31] Re-register DLL Libraries      [32] Fix Windows Installer (MSI)" -ForegroundColor Magenta
     Write-Host "   [33] Reset Windows Update Policy    [34] Repair WMI Repository" -ForegroundColor Magenta
     Write-Host ""
@@ -168,10 +173,16 @@ function Show-MainMenu {
     Write-Host "   [93] Event Viewer                   [94] Services Manager" -ForegroundColor DarkCyan
     Write-Host "   [95] Disk Management                [96] Computer Management" -ForegroundColor DarkCyan
     Write-Host ""
+    Write-Host "   --- SHOP TOOLS ---" -ForegroundColor DarkGray
+    Write-Host "   [97] USB Virus Unhider              [98] Driver Exporter (Backup All)" -ForegroundColor Green
+    Write-Host "   [99] Silent App Installer (Winget)  [100] Hardware Test Helpers" -ForegroundColor Green
+    Write-Host "   [101] Password Bypass (WinPE ONLY)" -ForegroundColor Red
+    Write-Host ""
     Write-Host "   [0]  Exit" -ForegroundColor Red
     Write-Host "  +====================================================================+" -ForegroundColor Cyan
     Write-Host ""
 }
+
 function Invoke-PowerPlans {
     Clear-Host; Write-Host "`n  === SETUP ALL POWER PLANS ===" -ForegroundColor Cyan
     Show-INF "Unlocking advanced power plans in registry..."
@@ -242,9 +253,6 @@ function Invoke-BatteryReport {
     else                { Show-ERR "No battery detected on this device." }
 }
 
-# ==============================================================================
-# SYSTEM CLEANING
-# ==============================================================================
 function Invoke-DeepClean {
     Clear-Host; Write-Host "`n  === DEEP SYSTEM CLEANER ===" -ForegroundColor Cyan
     @($env:TEMP, "$env:WINDIR\Temp", "$env:WINDIR\Prefetch",
@@ -354,9 +362,6 @@ function Invoke-BrokenShortcuts {
     else { Show-WRN "Processed $found broken shortcuts." }
 }
 
-# ==============================================================================
-# SYSTEM REPAIR
-# ==============================================================================
 function Invoke-SfcVerifyOnly {
     Clear-Host; Write-Host "`n  === SFC VERIFY ONLY (Read-Only Scan) ===" -ForegroundColor Cyan
     Show-INF "Scanning for integrity violations without making changes..."
@@ -507,18 +512,78 @@ function Invoke-ResetFirewall {
 }
 
 function Invoke-RebuildBCD {
-    if (-not (Confirm-Action "ADVANCED: Rebuild Boot Config (BCD)? Use ONLY if you have boot problems!")) { return }
-    Clear-Host; Write-Host "`n  === REBUILD BOOT CONFIG (BCD) ===" -ForegroundColor Cyan
-    Make-RestorePoint "Before BCD Rebuild"
-    foreach ($cmd in @("bootrec /fixmbr","bootrec /fixboot","bootrec /scanos","bootrec /rebuildbcd")) {
-        Show-INF "Running: $cmd"; cmd /c $cmd
+    Clear-Host
+    Write-Host "`n  === BOOT REPAIR & BCD MANAGER ===" -ForegroundColor Cyan
+    Write-Host "  Use ONLY if you have boot or startup problems." -ForegroundColor Yellow
+    Write-Host ""
+    Write-Host "   [1] Full BCD Rebuild  (bootrec /fixmbr + /fixboot + /rebuildbcd)" -ForegroundColor Magenta
+    Write-Host "   [2] Repair UEFI Boot Files  (bcdboot - recommended for UEFI systems)" -ForegroundColor Cyan
+    Write-Host "   [3] Both - Full repair  (BCD rebuild + bcdboot UEFI)" -ForegroundColor Green
+    Write-Host "   [4] Show current BCD entries  (bcdedit)" -ForegroundColor White
+    Write-Host "   [0] Back" -ForegroundColor DarkGray
+    Write-Host ""
+    $bc = Read-Host "  Select"
+    if ($bc -eq '0') { return }
+
+    # Detect Windows drive automatically
+    $winDrive = ($env:WINDIR).Substring(0,2)   # e.g. "C:"
+
+    switch ($bc) {
+        '1' {
+            if (-not (Confirm-Action "Run full BCD rebuild? (bootrec /fixmbr, /fixboot, /rebuildbcd)")) { return }
+            Make-RestorePoint "Before BCD Rebuild"
+            Show-INF "Step 1/4 - bootrec /fixmbr"
+            bootrec /fixmbr
+            Show-INF "Step 2/4 - bootrec /fixboot"
+            bootrec /fixboot
+            Show-INF "Step 3/4 - bootrec /scanos"
+            bootrec /scanos
+            Show-INF "Step 4/4 - bootrec /rebuildbcd"
+            bootrec /rebuildbcd
+            Show-OK "BCD rebuild completed. Restart your PC."
+        }
+        '2' {
+            if (-not (Confirm-Action "Repair UEFI boot files using bcdboot on drive ${winDrive}?")) { return }
+            Make-RestorePoint "Before bcdboot UEFI repair"
+            Show-INF "Running bcdboot on Windows at ${winDrive}\Windows (UEFI mode)..."
+            $result = bcdboot "${winDrive}\Windows" /f UEFI 2>&1
+            $result | ForEach-Object { Write-Host "  $_" -ForegroundColor White }
+            if ($LASTEXITCODE -eq 0) {
+                Show-OK "bcdboot UEFI repair successful."
+                Show-WRN "Restart your PC now to verify boot."
+            } else {
+                Show-WRN "bcdboot exited with code $LASTEXITCODE."
+                Show-INF "If this failed, try option [3] or run from Windows Recovery (WinRE)."
+            }
+            Write-Log "bcdboot UEFI repair exit: $LASTEXITCODE"
+        }
+        '3' {
+            if (-not (Confirm-Action "Run FULL boot repair (bootrec + bcdboot UEFI) on drive ${winDrive}?")) { return }
+            Make-RestorePoint "Before Full Boot Repair"
+            Show-INF "Step 1/5 - bootrec /fixmbr"
+            bootrec /fixmbr
+            Show-INF "Step 2/5 - bootrec /fixboot"
+            bootrec /fixboot
+            Show-INF "Step 3/5 - bootrec /scanos"
+            bootrec /scanos
+            Show-INF "Step 4/5 - bootrec /rebuildbcd"
+            bootrec /rebuildbcd
+            Show-INF "Step 5/5 - bcdboot ${winDrive}\Windows /f UEFI"
+            $result = bcdboot "${winDrive}\Windows" /f UEFI 2>&1
+            $result | ForEach-Object { Write-Host "  $_" -ForegroundColor White }
+            if ($LASTEXITCODE -eq 0) { Show-OK "Full boot repair completed successfully." }
+            else { Show-WRN "bcdboot step finished with code $LASTEXITCODE. Check output above." }
+            Show-OK "Restart your PC now."
+            Write-Log "Full boot repair completed. bcdboot exit: $LASTEXITCODE"
+        }
+        '4' {
+            Write-Host "`n  --- Current BCD Entries (bcdedit) ---" -ForegroundColor Yellow
+            bcdedit 2>&1 | Out-String | Write-Host -ForegroundColor White
+        }
+        default { Show-WRN "Invalid selection." }
     }
-    Show-OK "Boot config rebuilt. Restart now!"
 }
 
-# ==============================================================================
-# NETWORK & INTERNET
-# ==============================================================================
 function Invoke-NetworkReset {
     if (-not (Confirm-Action "Full network reset? Internet disconnects briefly.")) { return }
     Clear-Host; Write-Host "`n  === FULL NETWORK RESET ===" -ForegroundColor Cyan
@@ -661,9 +726,6 @@ function Invoke-FirewallManager {
     }
 }
 
-# ==============================================================================
-# CYBER SECURITY
-# ==============================================================================
 function Invoke-MalwareScan {
     Clear-Host; Write-Host "`n  === MALWARE QUICK SCAN ===" -ForegroundColor Cyan
     $mpCmd = "C:\Program Files\Windows Defender\MpCmdRun.exe"
@@ -820,9 +882,6 @@ function Invoke-LocalUsersGroups {
     Show-OK "Local Users and Groups opened."
 }
 
-# ==============================================================================
-# DIAGNOSTICS & INFO
-# ==============================================================================
 function Invoke-SysInfo {
     Clear-Host; Write-Host "`n  === FULL SYSTEM INFO REPORT ===" -ForegroundColor Cyan
     Show-INF "Collecting system information..."
@@ -1051,9 +1110,6 @@ function Invoke-AppsFolder {
     Show-OK "Apps Folder opened in File Explorer."
 }
 
-# ==============================================================================
-# ADVANCED
-# ==============================================================================
 function Invoke-FullMaintenance {
     if (-not (Confirm-Action "Run ALL safe maintenance tasks? This takes 20-40 minutes.")) { return }
     Clear-Host
@@ -1228,9 +1284,6 @@ function Invoke-OpenLog {
     else                    { Show-WRN "No log file found yet." }
 }
 
-# ==============================================================================
-# NEW TOOLS - POWER
-# ==============================================================================
 function Invoke-PowerEfficiencyReport {
     Clear-Host; Write-Host "`n  === POWER EFFICIENCY REPORT ===" -ForegroundColor Cyan
     $rep = "$env:USERPROFILE\Desktop\EnergyReport.html"
@@ -1240,9 +1293,6 @@ function Invoke-PowerEfficiencyReport {
     else                { Show-WRN "Report could not be generated." }
 }
 
-# ==============================================================================
-# NEW TOOLS - CLEANING
-# ==============================================================================
 function Invoke-WipeFreeSpace {
     if (-not (Confirm-Action "Zero-fill free space on C: with cipher /w? Securely removes deleted data. May take a very long time.")) { return }
     Clear-Host; Write-Host "`n  === WIPE FREE SPACE ===" -ForegroundColor Cyan
@@ -1272,72 +1322,6 @@ function Invoke-RemoveOrphanedAppData {
     else { Show-WRN "$found possibly orphaned folders shown. Review and delete manually if sure." }
 }
 
-# ==============================================================================
-# NEW TOOLS - REPAIR
-# ==============================================================================
-function Invoke-ReRegisterDLLs {
-    Clear-Host; Write-Host "`n  === RE-REGISTER COMMON DLL LIBRARIES ===" -ForegroundColor Cyan
-    Show-INF "Re-registering common system and Windows Update DLLs..."
-    $dlls = @(
-        "atl.dll","urlmon.dll","mshtml.dll","browseui.dll","jscript.dll","vbscript.dll",
-        "msxml3.dll","msxml6.dll","actxprxy.dll","softpub.dll","wintrust.dll",
-        "dssenh.dll","rsaenh.dll","ole32.dll","oleaut32.dll","shell32.dll",
-        "initpki.dll","wuapi.dll","wuaueng.dll","wups.dll","wups2.dll",
-        "qmgr.dll","qmgrprxy.dll","wucltux.dll","muweb.dll"
-    )
-    $ok = 0; $fail = 0
-    foreach ($dll in $dlls) {
-        regsvr32 /s $dll 2>$null | Out-Null
-        if ($LASTEXITCODE -eq 0) { $ok++ } else { $fail++ }
-    }
-    Show-OK "Registered: $ok  |  Missing/Skipped: $fail"
-    Show-WRN "Restart recommended to apply changes."
-}
-
-function Invoke-FixMSI {
-    Clear-Host; Write-Host "`n  === FIX WINDOWS INSTALLER (MSI) ===" -ForegroundColor Cyan
-    Show-INF "Restarting Windows Installer service..."
-    Stop-Service msiserver -Force -ErrorAction SilentlyContinue
-    Start-Sleep -Seconds 1
-    Start-Service msiserver -ErrorAction SilentlyContinue
-    Set-Service   msiserver -StartupType Automatic -ErrorAction SilentlyContinue
-    Show-OK "Windows Installer service restarted."
-    Show-INF "Re-registering msiexec..."
-    msiexec /unregister 2>$null | Out-Null
-    msiexec /regserver  2>$null | Out-Null
-    Show-OK "msiexec re-registered."
-}
-
-function Invoke-ResetUpdatePolicy {
-    if (-not (Confirm-Action "Remove Windows Update group policy overrides? Restores default update behavior.")) { return }
-    Clear-Host; Write-Host "`n  === RESET WINDOWS UPDATE POLICY ===" -ForegroundColor Cyan
-    @("HKLM:\SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate", "HKLM:\SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate\AU") | ForEach-Object {
-        if (Test-Path $_) { Remove-Item $_ -Recurse -Force -ErrorAction SilentlyContinue; Show-OK "Removed: $_" }
-        else { Write-Host "  [--] Not found: $_" -ForegroundColor DarkGray }
-    }
-    gpupdate /force 2>$null | Out-Null
-    Show-OK "Update policies cleared and Group Policy refreshed."
-}
-
-function Invoke-RepairWMI {
-    Clear-Host; Write-Host "`n  === REPAIR WMI REPOSITORY ===" -ForegroundColor Cyan
-    Show-INF "Stopping WMI service..."
-    Stop-Service winmgmt -Force -ErrorAction SilentlyContinue
-    Show-INF "Verifying WMI repository..."
-    $result = winmgmt /verifyrepository 2>&1 | Out-String
-    Write-Host "  $result" -ForegroundColor White
-    if ($result -match "inconsistent|damaged") {
-        Show-WRN "Repository damaged. Rebuilding..."
-        winmgmt /resetrepository 2>$null | Out-Null
-        Show-OK "WMI repository rebuilt."
-    } else { Show-OK "WMI repository is consistent." }
-    Start-Service winmgmt -ErrorAction SilentlyContinue
-    Show-OK "WMI service restarted."
-}
-
-# ==============================================================================
-# NEW TOOLS - NETWORK
-# ==============================================================================
 function Invoke-ShowOpenPorts {
     Clear-Host; Write-Host "`n  === OPEN PORTS & ACTIVE CONNECTIONS ===" -ForegroundColor Cyan
     Write-Host "`n  --- Listening Ports ---" -ForegroundColor Yellow
@@ -1377,7 +1361,7 @@ function Invoke-ExportNetworkConfig {
     $file = "$env:USERPROFILE\Desktop\NetworkConfig_$(Get-Date -Format 'yyyyMMdd_HHmmss').txt"
     Show-INF "Collecting full network configuration..."
     @(
-        "=== PRO LAPTOP v3.0 - NETWORK CONFIG BACKUP ===",
+        "=== PRO LAPTOP v3.1 - NETWORK CONFIG BACKUP ===",
         "Date: $(Get-Date)", "",
         "=== ipconfig /all ===",
         (ipconfig /all 2>$null | Out-String),
@@ -1394,9 +1378,6 @@ function Invoke-ExportNetworkConfig {
     else                 { Show-WRN "Could not save config." }
 }
 
-# ==============================================================================
-# NEW TOOLS - SECURITY
-# ==============================================================================
 function Invoke-MalwareFullScan {
     Clear-Host; Write-Host "`n  === MALWARE FULL SCAN ===" -ForegroundColor Cyan
     $mpCmd = "C:\Program Files\Windows Defender\MpCmdRun.exe"
@@ -1418,7 +1399,6 @@ function Invoke-DefenderMgmt {
         Write-Host "`n  === WINDOWS DEFENDER MANAGEMENT ===" -ForegroundColor Cyan
         Write-Host ""
         $mpCmd = "C:\Program Files\Windows Defender\MpCmdRun.exe"
-        # Show current status
         try {
             $mpStatus = Get-MpComputerStatus -ErrorAction Stop
             $rtCol = if ($mpStatus.RealTimeProtectionEnabled) { "Green" } else { "Red" }
@@ -1560,7 +1540,6 @@ function Invoke-HostsFileEditor {
     Clear-Host; Write-Host "`n  === HOSTS FILE VIEWER / EDITOR ===" -ForegroundColor Cyan
     $hostsPath = "$env:WINDIR\System32\drivers\etc\hosts"
 
-    # Show current lock status
     $attr = Get-ItemProperty $hostsPath -ErrorAction SilentlyContinue
     $isReadOnly = $attr -and $attr.IsReadOnly
     $lockStatus = if ($isReadOnly) { "LOCKED (Read-Only)" } else { "Unlocked (Writable)" }
@@ -1594,12 +1573,10 @@ function Invoke-HostsFileEditor {
             attrib +r $hostsPath 2>$null | Out-Null
             Show-OK "Hosts file LOCKED (Read-Only). Malware cannot modify it."
             Show-WRN "Remember to unlock it with option [3] if you need to edit it later."
-            Write-Log "Hosts file locked with attrib +r"
         }
         '3' {
             attrib -r $hostsPath 2>$null | Out-Null
             Show-OK "Hosts file UNLOCKED (Writable). You can now edit it."
-            Write-Log "Hosts file unlocked with attrib -r"
         }
         '4' {
             Clear-DnsClientCache
@@ -1619,14 +1596,10 @@ function Invoke-HostsFileEditor {
             $defaultHosts | Out-File $hostsPath -Encoding ASCII -ErrorAction SilentlyContinue
             Clear-DnsClientCache
             Show-OK "Hosts file reset to Windows default and DNS flushed."
-            Write-Log "Hosts file reset to default"
         }
     }
 }
 
-# ==============================================================================
-# NEW TOOLS - DIAGNOSTICS
-# ==============================================================================
 function Invoke-InstalledPrograms {
     Clear-Host; Write-Host "`n  === INSTALLED PROGRAMS LIST ===" -ForegroundColor Cyan
     Show-INF "Collecting installed programs from registry..."
@@ -1696,26 +1669,20 @@ function Invoke-ReliabilityHistory {
     Show-INF "Opening Reliability Monitor (perfmon /rel)..."
     Start-Process "perfmon" -ArgumentList "/rel" -ErrorAction SilentlyContinue
     Show-OK "Reliability Monitor opened."
-    Write-Host "  [i] Shows app crashes, failures, and system stability index over time." -ForegroundColor Yellow
 }
 
-# ==============================================================================
-# NEW TOOLS - ADVANCED
-# ==============================================================================
 function Invoke-MemoryDiagnostic {
     Clear-Host; Write-Host "`n  === WINDOWS MEMORY DIAGNOSTIC ===" -ForegroundColor Cyan
     Show-WRN "This will schedule a RAM test at next restart."
     if (-not (Confirm-Action "Schedule Windows Memory Diagnostic (mdsched) at next restart?")) { return }
     mdsched.exe 2>$null
     Show-OK "Memory Diagnostic scheduled. Restart your PC when ready."
-    Write-Log "Windows Memory Diagnostic scheduled."
 }
 
 function Invoke-MsConfig {
     Clear-Host; Write-Host "`n  === SYSTEM CONFIGURATION (msconfig) ===" -ForegroundColor Cyan
     Start-Process "msconfig" -ErrorAction SilentlyContinue
     Show-OK "System Configuration opened."
-    Write-Host "  [i] Boot tab: Safe Mode. General: Selective startup." -ForegroundColor Yellow
 }
 
 function Invoke-ResourceMonitor {
@@ -1754,121 +1721,78 @@ function Invoke-ComputerManagement {
     Show-OK "Computer Management opened."
 }
 
+function Invoke-UsbUnhider {
+    Clear-Host; Write-Host "`n  === USB VIRUS UNHIDER ===" -ForegroundColor Cyan
+    $drive = Read-Host "  Enter USB Drive Letter (e.g., F)"
+    if ($drive -match "^[a-zA-Z]$") {
+        $path = "$($drive):\"
+        if (Test-Path $path) {
+            cmd.exe /c "attrib -h -r -s /s /d $($path)*.*"
+            Get-ChildItem -Path $path -Filter "*.lnk" -Recurse -ErrorAction SilentlyContinue | Remove-Item -Force
+            Show-OK "USB Drive $path cleaned successfully!"
+        }
+    }
+}
+
+function Invoke-DriverExporter {
+    Clear-Host; Write-Host "`n  === EXPORT ALL DRIVERS ===" -ForegroundColor Cyan
+    $dest = Read-Host "  Enter path to save (e.g. E:\Drivers)"
+    if ($dest) { New-Item -ItemType Directory -Force -Path $dest | Out-Null; Export-WindowsDriver -Online -Destination $dest -ErrorAction SilentlyContinue | Out-Null; Show-OK "Exported to $dest" }
+}
+
+function Invoke-HardwareTestHelpers {
+    Clear-Host; Write-Host "`n  === HARDWARE TEST HELPERS ===" -ForegroundColor Cyan
+    Start-Process "https://keyboardtester.com/tester/" -ErrorAction SilentlyContinue
+    Start-Process "https://lcdtech.info/en/tests/dead.pixel.htm" -ErrorAction SilentlyContinue
+    Show-OK "Diagnostic tools opened in browser."
+}
+
+function Invoke-PasswordBypass {
+    Clear-Host; Write-Host "`n  === PASSWORD BYPASS (WinPE TRICK) ===" -ForegroundColor Cyan
+    Show-WRN "Use this ONLY from a Bootable USB (WinPE)!"
+    $winDrive = if (Test-Path "C:\Windows\System32") { "C:" } elseif (Test-Path "D:\Windows\System32") { "D:" } else { $null }
+    if ($winDrive) {
+        Copy-Item "$winDrive\Windows\System32\utilman.exe" "$winDrive\Windows\System32\utilman.exe.bak" -Force -ErrorAction SilentlyContinue
+        Copy-Item "$winDrive\Windows\System32\cmd.exe" "$winDrive\Windows\System32\utilman.exe" -Force -ErrorAction SilentlyContinue
+        Show-OK "Bypass injected! Restart and click Accessibility icon."
+    }
+}
+
+function Invoke-BasicAppsInstall {
+    Clear-Host; Write-Host "`n  === SILENT APP INSTALLER (Winget) ===" -ForegroundColor Cyan
+    if (Get-Command winget -ErrorAction SilentlyContinue) {
+        $apps = @("Google.Chrome", "RARLab.WinRAR", "VideoLAN.VLC", "Adobe.Acrobat.Reader.64-bit")
+        foreach ($app in $apps) { winget install --id=$app -e --accept-package-agreements --accept-source-agreements --silent 2>$null; Show-OK "$app installed." }
+    } else { Show-ERR "Winget not found." }
+}
+
 # ==============================================================================
-# DISPATCH TABLE & MAIN LOOP
+# DISPATCH TABLE
 # ==============================================================================
 $dispatchTable = @{
-    # POWER
-    '1'  = { Invoke-PowerPlans }
-    '2'  = { Invoke-FixBattery }
-    '3'  = { Invoke-ResetPower }
-    '4'  = { Invoke-CpuBoost }
-    '5'  = { Invoke-BatteryReport }
-    '6'  = { Invoke-PowerEfficiencyReport }
-    # CLEANING
-    '7'  = { Invoke-DeepClean }
-    '8'  = { Invoke-BrowserClean }
-    '9'  = { Invoke-CleanUpdateCache }
-    '10' = { Invoke-RemoveOldWindows }
-    '11' = { Invoke-EmptyBin }
-    '12' = { Invoke-ClearEventLogs }
-    '13' = { Invoke-DiskCleanup }
-    '14' = { Invoke-BrokenShortcuts }
-    '15' = { Invoke-WipeFreeSpace }
-    '16' = { Invoke-RemoveOrphanedAppData }
-    # REPAIR
-    '17' = { Invoke-SfcVerifyOnly }
-    '18' = { Invoke-SfcScannow }
-    '19' = { Invoke-DismCheckHealth }
-    '20' = { Invoke-DismScanHealth }
-    '21' = { Invoke-DismRestoreHealth }
-    '22' = { Invoke-DismComponentCleanup }
-    '23' = { Invoke-RepairDisk }
-    '24' = { Invoke-FixUpdate }
-    '25' = { Invoke-FixStore }
-    '26' = { Invoke-FixSearch }
-    '27' = { Invoke-FixAudio }
-    '28' = { Invoke-FixTime }
-    '29' = { Invoke-ResetFirewall }
-    '30' = { Invoke-RebuildBCD }
-    '31' = { Invoke-ReRegisterDLLs }
-    '32' = { Invoke-FixMSI }
-    '33' = { Invoke-ResetUpdatePolicy }
-    '34' = { Invoke-RepairWMI }
-    # NETWORK
-    '35' = { Invoke-NetworkReset }
-    '36' = { Invoke-SetGoogleDNS }
-    '37' = { Invoke-SetCloudflareDNS }
-    '38' = { Invoke-ResetDnsAuto }
-    '39' = { Invoke-NetDiag }
-    '40' = { Invoke-IpconfigAll }
-    '41' = { Invoke-OpenNetworkConnections }
-    '42' = { Invoke-ResetProxy }
-    '43' = { Invoke-WifiProfiles }
-    '44' = { Invoke-FirewallManager }
-    '45' = { Invoke-ShowOpenPorts }
-    '46' = { Invoke-TestInternetSpeed }
-    '47' = { Invoke-ExportNetworkConfig }
-    # SECURITY
-    '48' = { Invoke-MalwareScan }
-    '49' = { Invoke-DefenderMgmt }
-    '50' = { Invoke-MalwareFullScan }
-    '51' = { Invoke-DisableTelemetry }
-    '52' = { Invoke-StartupAnalyzer }
-    '53' = { Invoke-SuspiciousProcs }
-    '54' = { Invoke-KillUnsignedProcs }
-    '55' = { Invoke-EnableSecurity }
-    '56' = { Invoke-CertManager }
-    '57' = { Invoke-LocalSecurityPolicy }
-    '58' = { Invoke-DriverVerifier }
-    '59' = { Invoke-LocalUsersGroups }
-    '60' = { Invoke-AuditPolicyStatus }
-    '61' = { Invoke-CheckRootkitIndicators }
-    '62' = { Invoke-HostsFileEditor }
-    # DIAGNOSTICS
-    '63' = { Invoke-SysInfo }
-    '64' = { Invoke-CpuRamInfo }
-    '65' = { Invoke-RamDetails }
-    '66' = { Invoke-DiskHealth }
-    '67' = { Invoke-GpuInfo }
-    '68' = { Invoke-DriverCheck }
-    '69' = { Invoke-CheckActivation }
-    '70' = { Invoke-UptimeServices }
-    '71' = { Invoke-RemoteDesktop }
-    '72' = { Invoke-GroupPolicyEditor }
-    '73' = { Invoke-AppsFolder }
-    '74' = { Invoke-InstalledPrograms }
-    '75' = { Invoke-TopProcesses }
-    '76' = { Invoke-EnvironmentVariables }
-    '77' = { Invoke-BsodLog }
-    '78' = { Invoke-ReliabilityHistory }
-    # ADVANCED
-    '79' = { Invoke-FullMaintenance }
-    '80' = { Invoke-RestorePoint }
-    '81' = { Invoke-DefragHDD }
-    '82' = { Invoke-TrimSSD }
-    '83' = { Invoke-OptimizeAllSSDs }
-    '84' = { Invoke-DriverManagement }
-    '85' = { Invoke-ScheduledTaskManager }
-    '86' = { Invoke-StartupPrograms }
-    '87' = { Invoke-RegBackup }
-    '88' = { Invoke-OpenLog }
-    '89' = { Invoke-MemoryDiagnostic }
-    '90' = { Invoke-MsConfig }
-    '91' = { Invoke-ResourceMonitor }
-    '92' = { Invoke-PerfMonitor }
-    '93' = { Invoke-EventViewer }
-    '94' = { Invoke-ServicesManager }
-    '95' = { Invoke-DiskManagement }
-    '96' = { Invoke-ComputerManagement }
+    '1'={Invoke-PowerPlans}; '2'={Invoke-FixBattery}; '3'={Invoke-ResetPower}; '4'={Invoke-CpuBoost}; '5'={Invoke-BatteryReport}; '6'={Invoke-PowerEfficiencyReport};
+    '7'={Invoke-DeepClean}; '8'={Invoke-BrowserClean}; '9'={Invoke-CleanUpdateCache}; '10'={Invoke-RemoveOldWindows}; '11'={Invoke-EmptyBin}; '12'={Invoke-ClearEventLogs};
+    '13'={Invoke-DiskCleanup}; '14'={Invoke-BrokenShortcuts}; '15'={Invoke-WipeFreeSpace}; '16'={Invoke-RemoveOrphanedAppData};
+    '17'={Invoke-SfcVerifyOnly}; '18'={Invoke-SfcScannow}; '19'={Invoke-DismCheckHealth}; '20'={Invoke-DismScanHealth}; '21'={Invoke-DismRestoreHealth}; '22'={Invoke-DismComponentCleanup};
+    '23'={Invoke-RepairDisk}; '24'={Invoke-FixUpdate}; '25'={Invoke-FixStore}; '26'={Invoke-FixSearch}; '27'={Invoke-FixAudio}; '28'={Invoke-FixTime}; '29'={Invoke-ResetFirewall}; '30'={Invoke-RebuildBCD};
+    '31'={Invoke-ReRegisterDLLs}; '32'={Invoke-FixMSI}; '33'={Invoke-ResetUpdatePolicy}; '34'={Invoke-RepairWMI};
+    '35'={Invoke-NetworkReset}; '36'={Invoke-SetGoogleDNS}; '37'={Invoke-SetCloudflareDNS}; '38'={Invoke-ResetDnsAuto}; '39'={Invoke-NetDiag}; '40'={Invoke-IpconfigAll};
+    '41'={Invoke-OpenNetworkConnections}; '42'={Invoke-ResetProxy}; '43'={Invoke-WifiProfiles}; '44'={Invoke-FirewallManager}; '45'={Invoke-ShowOpenPorts}; '46'={Invoke-TestInternetSpeed}; '47'={Invoke-ExportNetworkConfig};
+    '48'={Invoke-MalwareScan}; '49'={Invoke-DefenderMgmt}; '50'={Invoke-MalwareFullScan}; '51'={Invoke-DisableTelemetry}; '52'={Invoke-StartupAnalyzer}; '53'={Invoke-SuspiciousProcs}; '54'={Invoke-KillUnsignedProcs}; '55'={Invoke-EnableSecurity};
+    '56'={Invoke-CertManager}; '57'={Invoke-LocalSecurityPolicy}; '58'={Invoke-DriverVerifier}; '59'={Invoke-LocalUsersGroups}; '60'={Invoke-AuditPolicyStatus}; '61'={Invoke-CheckRootkitIndicators}; '62'={Invoke-HostsFileEditor};
+    '63'={Invoke-SysInfo}; '64'={Invoke-CpuRamInfo}; '65'={Invoke-RamDetails}; '66'={Invoke-DiskHealth}; '67'={Invoke-GpuInfo}; '68'={Invoke-DriverCheck}; '69'={Invoke-CheckActivation}; '70'={Invoke-UptimeServices};
+    '71'={Invoke-RemoteDesktop}; '72'={Invoke-GroupPolicyEditor}; '73'={Invoke-AppsFolder}; '74'={Invoke-InstalledPrograms}; '75'={Invoke-TopProcesses}; '76'={Invoke-EnvironmentVariables}; '77'={Invoke-BsodLog}; '78'={Invoke-ReliabilityHistory};
+    '79'={Invoke-FullMaintenance}; '80'={Invoke-RestorePoint}; '81'={Invoke-DefragHDD}; '82'={Invoke-TrimSSD}; '83'={Invoke-OptimizeAllSSDs}; '84'={Invoke-DriverManagement}; '85'={Invoke-ScheduledTaskManager};
+    '86'={Invoke-StartupPrograms}; '87'={Invoke-RegBackup}; '88'={Invoke-OpenLog}; '89'={Invoke-MemoryDiagnostic}; '90'={Invoke-MsConfig}; '91'={Invoke-ResourceMonitor}; '92'={Invoke-PerfMonitor}; '93'={Invoke-EventViewer}; '94'={Invoke-ServicesManager}; '95'={Invoke-DiskManagement}; '96'={Invoke-ComputerManagement};
+    '97'={Invoke-UsbUnhider}; '98'={Invoke-DriverExporter}; '99'={Invoke-BasicAppsInstall}; '100'={Invoke-HardwareTestHelpers}; '101'={Invoke-PasswordBypass}
 }
 
 while ($true) {
     Show-MainMenu
-    $choice = (Read-Host "  Select an option (0-96)").Trim()
+    $choice = (Read-Host "`n  Select an option (0-101)").Trim()
 
     if ($choice -eq '0') {
-        Write-Host "`n  Thank you for using Pro Laptop Ultimate v3.0 - Stay Secure!" -ForegroundColor Green
+        Write-Host "`n  Thank you for using Pro Laptop Ultimate v3.1 - Stay Secure!" -ForegroundColor Green
         Write-Host "  Eng. Mahmoud Kullab  |  +970 599 548 716" -ForegroundColor DarkGray
         Write-Host "  mahmoud-kullab.github.io  |  github.com/mahmoud-kullab" -ForegroundColor DarkGray
         Write-Log "SESSION ENDED"
@@ -1882,7 +1806,7 @@ while ($true) {
         catch { Show-ERR "Unexpected error in tool $choice : $_"; Write-Log "Crash in tool $choice : $_" "ERROR" }
         Wait-Enter
     } else {
-        Write-Host "`n  [!] Invalid selection. Enter a number between 0 and 96." -ForegroundColor Red
+        Write-Host "`n  [!] Invalid selection. Enter a number between 0 and 101." -ForegroundColor Red
         Start-Sleep -Seconds 1
     }
 }
